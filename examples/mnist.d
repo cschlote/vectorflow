@@ -101,19 +101,20 @@ Obs[] load_data(string prefix)
 
 void main(string[] args)
 {
-    writeln("Hello world!");
+    writeln("MNIST Test Binary");
 
     auto nn = NeuralNet()
-        .stack(DenseData(28 * 28)) // MNIST is of dimension 28 * 28 = 784
-        .stack(Linear(200)) // one hidden layer
-        .stack(DropOut(0.3))
-        .stack(SeLU()) // non-linear activation
-        .stack(Linear(10)); // 10 classes for 10 digits
+        .stack("input", DenseData(28 * 28)) // MNIST is of dimension 28 * 28 = 784
+        .stack("hidden", Linear(200)) // one hidden layer
+        .stack("drop", DropOut(0.3))
+        .stack("activate", SeLU()) // non-linear activation
+        .stack("output", Linear(10)); // 10 classes for 10 digits
     nn.initialize(0.0001);
 
     auto data = load_data();
     auto train = data[0];
     auto test = data[1];
+    auto testb = data[1];
 
     nn.learn(train, "multinomial",
             new ADAM(
@@ -147,4 +148,15 @@ void main(string[] args)
     }
     err /= test.length;
     writeln("Classification error: ", err);
+
+    // do benchmarking
+    {
+		enum bloops = 100000;
+		void asknn() {
+			auto fun = nn.predict(testb[0]);
+		}
+		import std.datetime.stopwatch;
+		auto br = benchmark!( asknn )(bloops);
+		writeln("Benched predict() : ", br[0] / bloops );
+	}
 }
