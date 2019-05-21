@@ -12,6 +12,7 @@ private{
 }
 version(LDC)
 {
+    pragma(msg, "Using fast math mode.");
     private{
     import ldc.attributes;
     import ldc.intrinsics;
@@ -26,6 +27,7 @@ version(LDC)
 }
 else
 {
+    pragma(msg, "Using standard math mode.");
     public import std.math : sqrt, exp, fmax, log, round, sqrt;
     private import std.math : abs;
     alias fabs = abs;
