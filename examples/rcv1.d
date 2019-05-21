@@ -154,10 +154,11 @@ void main(string[] args)
     auto data = load_data();
     auto train = data[0];
     auto test = data[1];
+    auto testb = data[1];
 
     // simple sparse linear model with L2 regularization:
     auto nn = NeuralNet()
-        .stack(SparseData(1 << 16)) // 2^16 = 65536 > 47236 features
+        .stack(SparseData(2^^16)) // 2^16 = 65536 > 47236 features
         .stack(Linear(1)
                 .prior(L2Prior(0.001)) // L2 regularization with lambda=0.001
                 );
@@ -186,4 +187,15 @@ void main(string[] args)
         cnt++;
     }
     writeln("Classification error: ", err / cnt);
+
+    // do benchmarking
+    {
+		enum bloops = 100000;
+		void asknn() {
+			auto fun = nn.predict(testb.front);
+		}
+		import std.datetime.stopwatch;
+		auto br = benchmark!( asknn )(bloops);
+		writeln("Benched predict() : ", br[0] / bloops );
+	}
 }
